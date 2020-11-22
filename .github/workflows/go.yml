@@ -1,0 +1,53 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+
+    - name: Build Backend
+      run: |
+        go build -v .
+        mkdir /tmp/app
+        cp godnslog /tmp/app/
+        
+    - name: Use Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - name: Build Frontend
+      run: |
+        cd frontend
+        yarn config set registry https://registry.npm.taobao.org
+        yarn install
+        yarn build
+        cp -R dist /tmp/app/
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: my-artifact
+        path: /tmp/app

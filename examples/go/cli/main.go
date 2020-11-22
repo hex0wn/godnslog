@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chennqqi/godnslog/client"
+	"github.com/hex0wn/godnslog/client"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/chennqqi/godnslog
+module github.com/hex0wn/godnslog
 
 go 1.14
 

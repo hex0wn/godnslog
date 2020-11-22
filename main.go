@@ -15,7 +15,7 @@ import (
 
 const (
 	AuthExpire                   = 24 * 3600 * time.Second
-	DefaultCleanInterval         = 7200 //seconds
+	DefaultCleanInterval         = 72000 //seconds
 	DefaultLanguage              = "en-US"
 	DefaultQueryApiMaxItem       = 20
 	DefaultMaxCallbackErrorCount = 5

@@ -14,7 +14,6 @@ type TblUser struct {
 	Name    string `xorm:"varchar(64) notnull unique"`
 	Email   string `xorm:"varchar(64) notnull unique"`
 	Role    int    `xorm:"tinyint notnull default 0"`
-	ShortId string `xorm:"varchar(32) notnull unique"`
 	Token   string `xorm:"varchar(128) notnull unique"`
 	Pass    string `xorm:"varchar(128) notnull"`
 
@@ -49,6 +48,7 @@ type TblHttp struct {
 	Data   string    `xorm:"mediumtext"`
 	Ctype  string    `xorm:"varchar(64)"`
 	Ua     string    `xorm:"text"`
+	Raw    string    `xorm:"text"`
 	Ctime  time.Time `xorm:"datetime"`
 	Atime  time.Time `xorm:"datetime created"`
 }

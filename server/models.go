@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/chennqqi/godnslog/models"
+	"github.com/hex0wn/godnslog/models"
 )
 
 //==============================================================================

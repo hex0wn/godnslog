@@ -12,13 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chennqqi/godnslog/models"
+	"github.com/hex0wn/godnslog/models"
 )
 
 type Client struct {
 	*http.Client
 
-	shortId string
 	host    string
 	secret  string
 	domain  string
@@ -30,16 +29,10 @@ func NewClient(domain, secret string, ssl bool) (*Client, error) {
 		host = "https://" + domain
 	}
 
-	idx := strings.Index(domain, ".")
-	if idx <= 0 {
-		return nil, fmt.Errorf("Unexpect domain format")
-	}
-
 	client := &Client{
 		Client:  &http.Client{},
 		host:    host,
 		domain:  domain,
-		shortId: domain[:idx],
 		secret:  secret,
 	}
 	return client, nil
@@ -50,7 +43,7 @@ func (self *Client) BuildDnsDomain(v interface{}) string {
 }
 
 func (self *Client) BuildHttpURL(v interface{}) string {
-	return fmt.Sprintf("%v/log/%v/%v", self.host, self.shortId, v)
+	return fmt.Sprintf("%v/log/%v", self.host, v)
 }
 
 func (self *Client) Hash(querys url.Values) string {

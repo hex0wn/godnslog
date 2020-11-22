@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chennqqi/godnslog/cache"
-	"github.com/chennqqi/godnslog/server"
+	"github.com/hex0wn/godnslog/cache"
+	"github.com/hex0wn/godnslog/server"
 	"github.com/google/subcommands"
 	"github.com/slonzok/getpass"
 

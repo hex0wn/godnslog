@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/chennqqi/godnslog/client"
-	"github.com/chennqqi/godnslog/models"
+	"github.com/hex0wn/godnslog/client"
+	"github.com/hex0wn/godnslog/models"
 )
 
 func main() {

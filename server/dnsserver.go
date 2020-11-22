@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/chennqqi/godnslog/cache"
-	"github.com/chennqqi/godnslog/models"
+	"github.com/hex0wn/godnslog/cache"
+	"github.com/hex0wn/godnslog/models"
 	"github.com/miekg/dns"
 )
 
@@ -169,7 +169,7 @@ func (h *DnsServer) Do(w dns.ResponseWriter, req *dns.Msg) {
 	var uid int64
 	var ttl uint32
 	var ip net.IP
-	var prefix, shortId string
+	var prefix string
 
 	remoteAddr, ok := w.RemoteAddr().(*net.UDPAddr)
 	if ok {
@@ -205,7 +205,7 @@ func (h *DnsServer) Do(w dns.ResponseWriter, req *dns.Msg) {
 	}
 
 	//r.u3yszl9nidbsx8p9.example.com.
-	prefix, shortId, isRebind := parseDomain(q.Name, h.Domain)
+	prefix, isRebind := parseDomain(q.Name, h.Domain)
 	if prefix == "" {
 		ttl = DEFAULT_TTL // improve performance
 	}
@@ -221,7 +221,7 @@ func (h *DnsServer) Do(w dns.ResponseWriter, req *dns.Msg) {
 		}
 	}
 
-	v, exist := store.Get(shortId + ".suser")
+	v, exist := store.Get("admin.user")
 	var user *models.TblUser
 	if exist {
 		user = v.(*models.TblUser)
@@ -233,7 +233,7 @@ func (h *DnsServer) Do(w dns.ResponseWriter, req *dns.Msg) {
 			ip = net.ParseIP(user.Rebind[idx])
 		}
 	} else {
-		rrs, exist := fixed[shortId]
+		rrs, exist := fixed[prefix]
 		if exist {
 			idx := time.Now().Second() % len(rrs)
 			r := &rrs[idx]
@@ -259,7 +259,7 @@ func (h *DnsServer) Do(w dns.ResponseWriter, req *dns.Msg) {
 	case dns.TypeNS:
 		// TODO:
 		// return V4 direct
-		ttl = 600
+		ttl = NS_TTL
 		doResp(h.V4, q.Qtype)
 		return
 

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chennqqi/godnslog/models"
+	"github.com/hex0wn/godnslog/models"
 
-	"github.com/chennqqi/godnslog/cache"
+	"github.com/hex0wn/godnslog/cache"
 	"github.com/chennqqi/goutils/ginutils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -56,7 +56,6 @@ func (self *WebServer) initDatabase() error {
 		_, err = orm.InsertOne(&models.TblUser{
 			Name:          "admin",
 			Email:         "admin@godnslog.com",
-			ShortId:       genShortId(),
 			Pass:          makePassword(randomPass),
 			Token:         genRandomToken(),
 			Role:          roleSuper,
@@ -76,8 +75,6 @@ func (self *WebServer) initDatabase() error {
 		user := bean.(*models.TblUser)
 		userKey := fmt.Sprintf("%v.user", user.Id)
 		store.Set(userKey, user, cache.NoExpiration)
-		domainKey := fmt.Sprintf("%v.suser", user.ShortId)
-		store.Set(domainKey, user, cache.NoExpiration)
 		return nil
 	})
 
@@ -328,8 +325,6 @@ func (self *WebServer) userInfo(c *gin.Context) {
 			return
 		}
 		store.Set(userKey, user, cache.NoExpiration)
-		domainKey := fmt.Sprintf("%v.suser", user.ShortId)
-		store.Set(domainKey, user, cache.NoExpiration)
 	} else {
 		user = v.(*models.TblUser)
 	}
@@ -506,11 +501,6 @@ func (self *WebServer) delUser(c *gin.Context) {
 	for i := 0; i < len(req.Ids); i++ {
 		seedKey := fmt.Sprintf("%v.seed", req.Ids[i])
 		userKey := fmt.Sprintf("%v.user", req.Ids[i])
-		v, exist := cache.Get(userKey)
-		if exist {
-			domainKey := fmt.Sprintf("%v.suser", v.(*models.TblUser).ShortId)
-			cache.Delete(domainKey)
-		}
 
 		//logout these users
 		cache.Delete(seedKey)
@@ -551,7 +541,6 @@ func (self *WebServer) addUser(c *gin.Context) {
 		Email:         req.Email,
 		Role:          roleNormal,
 		Token:         genRandomToken(),
-		ShortId:       genShortId(),
 		Lang:          self.DefaultLanguage,
 		Pass:          makePassword(req.Password),
 		CleanInterval: self.DefaultCleanInterval,
@@ -680,8 +669,6 @@ func (self *WebServer) setUser(c *gin.Context) {
 			return
 		}
 		store.Set(userKey, dupUser, cache.NoExpiration)
-		domainKey := fmt.Sprintf("%v.suser", dupUser.ShortId)
-		store.Set(domainKey, dupUser, cache.NoExpiration)
 	}
 }
 
@@ -714,8 +701,6 @@ func (self *WebServer) getAppSetting(c *gin.Context) {
 			return
 		}
 		store.Set(userKey, user, cache.NoExpiration)
-		domainKey := fmt.Sprintf("%v.suser", user.ShortId)
-		store.Set(domainKey, user, cache.NoExpiration)
 	} else {
 		user = v.(*models.TblUser)
 	}
@@ -769,8 +754,6 @@ func (self *WebServer) setAppSetting(c *gin.Context) {
 			return
 		}
 		store.Set(userKey, user, cache.NoExpiration)
-		domainkey := fmt.Sprintf("%v.suser", user.ShortId)
-		store.Set(domainkey, user, cache.NoExpiration)
 	} else {
 		user = v.(*models.TblUser)
 	}
@@ -792,10 +775,8 @@ func (self *WebServer) setAppSetting(c *gin.Context) {
 
 	//update cache
 	{
-		domainKey := fmt.Sprintf("%v.suser", user.ShortId)
 		userKey := fmt.Sprintf("%v.user", user.Id)
 		store.Set(userKey, dupUser, cache.NoExpiration)
-		store.Set(domainKey, dupUser, cache.NoExpiration)
 	}
 
 	self.resp(c, 200, &CR{
@@ -832,17 +813,16 @@ func (self *WebServer) getSecuritySetting(c *gin.Context) {
 			return
 		}
 		store.Set(userKey, user, cache.NoExpiration)
-		domainkey := fmt.Sprintf("%v.suser", user.ShortId)
-		store.Set(domainkey, user, cache.NoExpiration)
 	} else {
 		user = v.(*models.TblUser)
 	}
 
+	// todo ShortId
 	self.resp(c, 200, &CR{
 		Message: "OK",
 		Result: AppSecurity{
-			HttpAddr: fmt.Sprintf("http://%v/log/%v/", self.IP, user.ShortId),
-			DnsAddr:  user.ShortId + "." + self.Domain,
+			HttpAddr: fmt.Sprintf("http://%v/log/", self.IP),
+			DnsAddr:  "x" + "." + self.Domain,
 			Token:    user.Token,
 		},
 	})
@@ -1161,6 +1141,7 @@ func (self *WebServer) getHttpRecord(c *gin.Context) {
 		rcd.Data = item.Data
 		rcd.Method = item.Method
 		rcd.Ua = item.Ua
+		rcd.Raw = item.Raw
 	}
 	self.resp(c, 200, &CR{
 		Message: "OK",

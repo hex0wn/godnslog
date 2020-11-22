@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/chennqqi/godnslog/cache"
-	"github.com/chennqqi/godnslog/server"
+	"github.com/hex0wn/godnslog/cache"
+	"github.com/hex0wn/godnslog/server"
 	"github.com/google/subcommands"
 	"github.com/sirupsen/logrus"
 )
@@ -71,6 +71,7 @@ func (p *servePwCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interfac
 		Dsn:                          p.dsn,
 		Domain:                       p.domain,
 		IP:                           p.ipv4,
+		WebDomain:					  "www", //p.webDomain
 		Listen:                       p.httpListen,
 		Swagger:                      p.swagger,
 		AuthExpire:                   AuthExpire,

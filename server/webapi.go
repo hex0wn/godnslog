@@ -6,11 +6,12 @@ import (
 	"encoding/hex"
 	"io"
 	"net"
+	"net/http/httputil"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/chennqqi/godnslog/models"
+	"github.com/hex0wn/godnslog/models"
 
 	"github.com/chennqqi/goutils/ginutils"
 	"github.com/gin-gonic/gin"
@@ -33,10 +34,7 @@ func (self *WebServer) dataPreHandler(c *gin.Context) {
 		host, _, _ = net.SplitHostPort(host)
 	}
 
-	_, shortId, _ := parseDomain(host, self.Domain)
-
 	c.Set("host", host)
-	c.Set("shortId", shortId)
 	proto := c.GetHeader("X-Forwarded-Proto")
 	if proto == "" {
 		proto = "http"
@@ -44,8 +42,7 @@ func (self *WebServer) dataPreHandler(c *gin.Context) {
 	c.Set("proto", proto)
 
 	store := self.store
-	domainKey := shortId + ".suser"
-	v, exist := store.Get(domainKey)
+	v, exist := store.Get("admin.user")
 	if !exist {
 		self.resp(c, 401, &CR{
 			Message: "No User",
@@ -120,7 +117,7 @@ func (self *WebServer) dataAuthHandler(c *gin.Context) {
 	}
 }
 
-// dig ${q}.${shortId}.godnslog.com
+// dig ${q}.godnslog.com
 func (self *WebServer) queryDnsRecord(c *gin.Context) {
 	orm := self.orm
 	session := orm.NewSession()
@@ -169,7 +166,7 @@ func (self *WebServer) queryDnsRecord(c *gin.Context) {
 	})
 }
 
-// curl http://${shortId}.godnslog.com/log/${q}
+// curl http://godnslog.com/log/${q}
 func (self *WebServer) queryHttpRecord(c *gin.Context) {
 	orm := self.orm
 	session := orm.NewSession()
@@ -212,6 +209,7 @@ func (self *WebServer) queryHttpRecord(c *gin.Context) {
 		item.Ctype = rcd.Ctype
 		item.Ip = rcd.Ip
 		item.Method = rcd.Method
+		item.Raw = rcd.Raw
 		item.Ua = rcd.Ua
 		item.Data = rcd.Data
 		item.Ctime = rcd.Ctime
@@ -232,13 +230,12 @@ func (self *WebServer) record(c *gin.Context) {
 	io.Copy(&data, c.Request.Body)
 	c.Request.Body.Close()
 
-	path := c.Request.URL.EscapedPath()
-
+	url := c.Request.RequestURI
+	raw, _ := httputil.DumpRequest(c.Request, true)
 	var uid int64
-	shortId := c.Param("shortId")
 
 	store := self.store
-	v, exist := store.Get(shortId + ".suser")
+	v, exist := store.Get("admin.suser")
 	if exist {
 		user := v.(*models.TblUser)
 		uid = user.Id
@@ -247,11 +244,12 @@ func (self *WebServer) record(c *gin.Context) {
 	_, err := session.InsertOne(&models.TblHttp{
 		Uid:    uid,
 		Ip:     c.ClientIP(),
-		Path:   path,
+		Path:   url,
 		Ua:     c.GetHeader("User-Agent"),
 		Ctype:  c.GetHeader("Content-Type"),
 		Var:    c.Param("any"),
 		Method: c.Request.Method,
+		Raw:    string(raw),
 		Ctime:  time.Now(),
 		Data:   data.String(),
 	})

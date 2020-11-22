@@ -50,7 +50,7 @@ func customQuote(s string) string {
 	return `'` + s + `'`
 }
 
-func parseDomain(name, root string) (prefix, shortId string, rebind bool) {
+func parseDomain(name, root string) (prefix string, rebind bool) {
 	//r.u3yszl9nidbsx8p9.example.com.
 	index := strings.Index(name, "."+root)
 	if index <= 0 {
@@ -59,20 +59,7 @@ func parseDomain(name, root string) (prefix, shortId string, rebind bool) {
 
 	//prefix = r.u3yszl9nidbsx8p9
 	prefix = name[:index]
-	lastIdx := strings.LastIndex(prefix, ".")
-	if lastIdx <= 0 {
-		shortId = prefix
-		prefix = ""
-		return
-	}
 
-	if lastIdx != len(prefix) {
-		//shortId = u3yszl9nidbsx8p9
-		shortId = prefix[lastIdx+1:]
-	}
-
-	//prefix = r
-	prefix = prefix[:lastIdx]
 	rebind = prefix == "r" || strings.HasSuffix(prefix, ".r")
 	return
 }

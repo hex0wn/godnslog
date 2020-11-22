@@ -134,6 +134,7 @@ type HttpRecord struct {
 	Data     string    `json:"data"`
 	Ctype    string    `json:"ctype"`
 	Ua       string    `json:"ua"`
+	Raw      string    `xorm:"text"`
 	Ctime    time.Time `json:"ctime"`
 }
 
