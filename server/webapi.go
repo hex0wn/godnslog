@@ -230,7 +230,7 @@ func (self *WebServer) record(c *gin.Context) {
 	io.Copy(&data, c.Request.Body)
 	c.Request.Body.Close()
 
-	url := c.Request.RequestURI
+	url := c.Request.URL.String()
 	raw, _ := httputil.DumpRequest(c.Request, true)
 	var uid int64
 
